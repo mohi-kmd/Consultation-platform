@@ -1,0 +1,98 @@
+consultation-platform/
+│
+├── backend/                 # Back-end با FastAPI
+│   ├── app/
+│   │   ├── main.py          # فایل اصلی FastAPI
+│   │   ├── models.py        # مدل‌های دیتابیس
+│   │   ├── schemas.py       # مدل‌های داده برای API
+│   │   ├── routes/          # فایل‌های مسیرها (users, conversations, domains)
+│   │   └── utils.py         # توابع کمکی (JWT, فیلتر AI)
+│   └── requirements.txt     # کتابخانه‌های مورد نیاز
+│
+├── frontend/                # Front-end با React/Next.js
+│   ├── pages/
+│   │   ├── index.js         # صفحه ورود
+│   │   ├── register.js      # صفحه ثبت‌نام
+│   │   ├── dashboard.js     # داشبورد کاربر
+│   │   └── chat/[id].js     # صفحه چت با AI
+│   ├── components/          # کامپوننت‌های UI
+│   │   ├── ChatBox.js
+│   │   ├── DomainSelector.js
+│   │   └── ConversationList.js
+│   └── package.json
+│
+└── README.md                # راهنمای نصب و اجرا
+id UUID PRIMARY KEY,
+name TEXT,
+email TEXT UNIQUE,
+password_hash TEXT,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+id UUID PRIMARY KEY,
+name TEXT,
+description TEXT
+id UUID PRIMARY KEY,
+user_id UUID REFERENCES Users(id),
+domain_id UUID REFERENCES Domains(id),
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+id UUID PRIMARY KEY,
+conversation_id UUID REFERENCES Conversations(id),
+sender TEXT, -- 'user' یا 'ai'
+content TEXT,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+id UUID PRIMARY KEY,
+message_id UUID REFERENCES Messages(id),
+rating INT,
+comment TEXT
+from fastapi import FastAPI
+from routes import users, conversations, domains
+
+app = FastAPI(title="Consultation Platform API")
+
+app.include_router(users.router, prefix="/users", tags=["Users"])
+app.include_router(domains.router, prefix="/domains", tags=["Domains"])
+app.include_router(conversations.router, prefix="/conversations", tags=["Conversations"])
+
+@app.get("/")
+def root():
+    return {"message": "Consultation Platform API is running"}
+import { useState } from "react";
+
+export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async () => {
+    // ارسال درخواست به Back-end
+  };
+
+  return (
+    <div className="login-page">
+      <h1>ورود به پلتفرم مشاوره</h1>
+      <input placeholder="ایمیل" value={email} onChange={e => setEmail(e.target.value)} />
+      <input placeholder="رمز عبور" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+      <button onClick={handleLogin}>ورود</button>
+    </div>
+  );
+}
+export default function ChatBox({ messages, onSend }) {
+  const [input, setInput] = useState("");
+
+  const handleSend = () => {
+    onSend(input);
+    setInput("");
+  };
+
+  return (
+    <div className="chat-box">
+      <div className="messages">
+        {messages.map((msg, i) => (
+          <div key={i} className={msg.sender}>
+            {msg.content}
+          </div>
+        ))}
+      </div>
+      <input value={input} onChange={e => setInput(e.target.value)} placeholder="پیام خود را وارد کنید..." />
+      <button onClick={handleSend}>ارسال</button>
+    </div>
+  );
+}
